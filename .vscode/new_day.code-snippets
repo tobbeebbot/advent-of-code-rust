@@ -1,0 +1,38 @@
+{
+	"aoc day problem scaffold": {
+		"scope": "rust",
+		"prefix": "aocd",
+		"body": [
+			"#![allow(unused)]"
+			""
+			"pub fn solve_part1(input: &str) -> String {"
+			"	\"unimplemented\".to_string()"
+			"}"
+			""
+			"pub fn solve_part2(input: &str) -> String {"
+			"	\"unimplemented\".to_string()"
+			"}"
+			""
+			"#[cfg(test)]"
+			"mod test_$1 {"
+    		"	use crate::solutions::$1::*;"
+			""
+    		"	#[test]"
+			"	fn test_part1() {"
+			"		let input = \"todo\";"
+			"		let expected = \"todo\";"
+			"		assert_eq!(expected, solve_part1(input))"
+			"	}"
+
+			"	#[test]"
+			"	fn test_part2() {"
+			"		let input = \"todo\";"
+			"		let expected = \"todo\";"
+			"		assert_eq!(expected, solve_part2(input))"
+			"	}"
+			"}"
+			"$2"
+		],
+		"description": "Creates a scaffold of a advent of code problem solution file."
+	}
+}
