@@ -1,14 +1,12 @@
 #![allow(unused)]
 
-use std::{collections::HashMap, ops::Index};
-
 use itertools::Itertools;
 use nom::{
     bytes::complete::tag,
-    character::complete::{self, alpha1, digit1},
+    character::complete::{self, alpha1},
     combinator::opt,
-    multi::{many0, many1, separated_list0},
-    sequence::{delimited, terminated, tuple},
+    multi::{many1, separated_list0},
+    sequence::{delimited, terminated},
     IResult,
 };
 
@@ -39,11 +37,18 @@ impl RoomEntry {
 
         let alphabet_twice = format!("{alphabet}{alphabet}");
 
-        self.encrypted_name.chars().map(|c| {
-            let shift = self.sector_id as usize % alpha_length;
-            alphabet_twice.chars().skip_while(|&a| a != c).skip(shift).next().unwrap()
-        }).join("")
-
+        self.encrypted_name
+            .chars()
+            .map(|c| {
+                let shift = self.sector_id as usize % alpha_length;
+                alphabet_twice
+                    .chars()
+                    .skip_while(|&a| a != c)
+                    .skip(shift)
+                    .next()
+                    .unwrap()
+            })
+            .join("")
     }
 }
 
