@@ -20,18 +20,19 @@ pub fn solve_part1(input: &str) -> u32 {
 }
 
 pub fn solve_part2(input: &str) -> u32 {
-    
-    let lines = input.lines();
 
-    let triplets = lines.enumerate().map(|(idx, row)| (idx / 3, row)).into_group_map();
-    // lines.clone().step_by(3).zip(lines.clone().skip(1).step_by(3)).zip(lines.skip(2).step_by(3));
+    let triplets = input
+        .lines()
+        .enumerate()
+        .map(|(idx, row)| (idx / 3, row))
+        .into_group_map();
 
     let valid_triangles = triplets.into_iter().map(|(_, t)| {
         let t = t.join(" ");
 
         let triangles = [t.split_ascii_whitespace().step_by(3).join(" "),
-                                        t.split_ascii_whitespace().skip(1).step_by(3).join(" "),
-                                        t.split_ascii_whitespace().skip(2).step_by(3).join(" ")];
+                                      t.split_ascii_whitespace().skip(1).step_by(3).join(" "),
+                                      t.split_ascii_whitespace().skip(2).step_by(3).join(" ")];
 
         triangles.into_iter().filter(|triangle| valid_triangle(triangle)).count() as u32
 
