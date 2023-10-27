@@ -3,8 +3,7 @@
 // https://adventofcode.com/2016/day/7
 
 use std::{
-    collections::{HashSet, VecDeque},
-    hash::Hash,
+    collections::{HashSet},
 };
 
 use itertools::Itertools;
@@ -93,7 +92,7 @@ fn supports_ssl(ip: &str) -> bool {
         match section.kind {
             SectionKind::Supernet => super_abas.extend(abas),
             SectionKind::Hypernet => hyper_babs.extend(
-                abas    // Convert to bab
+                abas // Convert to bab
                     .into_iter()
                     .map(|(a, b, aa)| (b, a, b))
                     .collect::<HashSet<(_, _, _)>>(),
