@@ -9,10 +9,7 @@ use nom::{
     sequence::{preceded, separated_pair},
     IResult,
 };
-use std::{
-    collections::BTreeSet,
-    fmt::{Display},
-};
+use std::{collections::BTreeSet, fmt::Display};
 
 const SCREEN_WIDTH: usize = 50;
 const SCREEN_HEIGHT: usize = 6;
@@ -84,31 +81,32 @@ impl Display for Screen {
 
 fn parse_command(input: &str) -> IResult<&str, Command> {
     fn parse_rect(input: &str) -> IResult<&str, Command> {
-        let (input, (width, height)) = preceded(
+        preceded(
             tag("rect "),
-            separated_pair(complete::u32, tag("x"), complete::u32),
-        )(input)?;
-        Ok((input, Command::Rect(width as usize, height as usize)))
+            nom::combinator::map(
+                separated_pair(complete::u32, tag("x"), complete::u32),
+                |(width, height)| Command::Rect(width as usize, height as usize),
+            ),
+        )(input)
     }
 
     fn parse_rotate(input: &str) -> IResult<&str, Command> {
-        fn parse_rot_col(input: &str) -> IResult<&str, Command> {
-            let (input, (idx, pixels)) = preceded(
-                tag("column x="),
+        let rotate_row_parser = preceded(
+            tag("row y="),
+            nom::combinator::map(
                 separated_pair(complete::u32, tag(" by "), complete::u32),
-            )(input)?;
-            Ok((input, Command::RotateCol(idx as usize, pixels as usize)))
-        }
-
-        fn parse_rot_row(input: &str) -> IResult<&str, Command> {
-            let (input, (idx, pixels)) = preceded(
-                tag("row y="),
+                |(idx, px)| Command::RotateRow(idx as usize, px as usize),
+            ),
+        );
+        let rotate_col_parser = preceded(
+            tag("column x="),
+            nom::combinator::map(
                 separated_pair(complete::u32, tag(" by "), complete::u32),
-            )(input)?;
-            Ok((input, Command::RotateRow(idx as usize, pixels as usize)))
-        }
+                |(idx, px)| Command::RotateCol(idx as usize, px as usize),
+            ),
+        );
 
-        preceded(tag("rotate "), alt((parse_rot_col, parse_rot_row)))(input)
+        preceded(tag("rotate "), alt((rotate_col_parser, rotate_row_parser)))(input)
     }
 
     alt((parse_rect, parse_rotate))(input)
@@ -144,10 +142,7 @@ mod test_day8 {
 
     #[test]
     fn test_parse_commands() {
-        assert_eq!(
-            Command::Rect(3, 2),
-            parse_command("rect 3x2").unwrap().1
-        );
+        assert_eq!(Command::Rect(3, 2), parse_command("rect 3x2").unwrap().1);
         assert_eq!(
             Command::RotateCol(1, 1),
             parse_command("rotate column x=1 by 1").unwrap().1
@@ -161,10 +156,7 @@ mod test_day8 {
     #[test]
     fn test_parse_command_list() {
         assert_eq!(
-            vec![
-                Command::Rect(3, 2),
-                Command::RotateCol(5, 2)
-            ],
+            vec![Command::Rect(3, 2), Command::RotateCol(5, 2)],
             parse_commands("rect 3x2\nrotate column x=5 by 2")
         )
     }
