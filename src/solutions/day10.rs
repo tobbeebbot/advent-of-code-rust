@@ -5,8 +5,8 @@ use nom::{
     branch,
     bytes::complete::tag,
     character::{self, complete},
-    combinator,
-    sequence::{preceded, tuple},
+    combinator, multi,
+    sequence::{self, preceded, tuple},
     IResult,
 };
 use std::collections::{HashMap, VecDeque};
@@ -40,11 +40,7 @@ enum SendId {
 #[derive(Debug)]
 enum Instruction {
     ValueTo(Chip, u32),
-    BotInstr {
-        bot_id: u32,
-        low_to: SendId,
-        high_to: SendId,
-    },
+    BotInstr(u32, BotLogic),
 }
 
 fn parse_instruction(input: &str) -> IResult<&str, Instruction> {
@@ -55,31 +51,41 @@ fn parse_instruction(input: &str) -> IResult<&str, Instruction> {
         ))(input)
     }
 
+    fn bot_logic(input: &str) -> IResult<&str, BotLogic> {
+        let (input, (give_low, give_high)) = tuple((
+            sequence::preceded(tag("low to "), send_id),
+            sequence::preceded(tag(" and high to "), send_id),
+        ))(input)?;
+
+        Ok((
+            input,
+            BotLogic {
+                give_low,
+                give_high,
+            },
+        ))
+    }
+
     branch::alt((
-        nom::combinator::map(
+        combinator::map(
             tuple((
-                nom::sequence::preceded(tag("value "), complete::u32),
-                nom::sequence::preceded(tag(" goes to bot "), complete::u32),
+                sequence::preceded(tag("value "), complete::u32),
+                sequence::preceded(tag(" goes to bot "), complete::u32),
             )),
             |(value, send_id)| Instruction::ValueTo(Chip(value), send_id),
         ),
-        nom::combinator::map(
+        combinator::map(
             tuple((
-                nom::sequence::preceded(tag("bot "), complete::u32),
-                nom::sequence::preceded(tag(" gives low to "), send_id),
-                nom::sequence::preceded(tag(" and high to "), send_id),
+                sequence::preceded(tag("bot "), complete::u32),
+                sequence::preceded(tag(" gives "), bot_logic),
             )),
-            |(bot_id, low_to, high_to)| Instruction::BotInstr {
-                bot_id,
-                low_to,
-                high_to,
-            },
+            |(bot_id, logic)| Instruction::BotInstr(bot_id, logic),
         ),
     ))(input)
 }
 
 fn parse_instructions(input: &str) -> Vec<Instruction> {
-    nom::multi::separated_list0(character::complete::newline, parse_instruction)(input)
+    multi::separated_list0(character::complete::newline, parse_instruction)(input)
         .unwrap()
         .1
 }
@@ -99,16 +105,8 @@ pub fn solve_part1(input: &str) -> String {
                     println!("Start goes to: {:?}", id);
                 }
             }
-            Instruction::BotInstr {
-                bot_id,
-                low_to,
-                high_to,
-            } => {
-                let bot = bots.entry(bot_id).or_default();
-                bot.logic = Some(BotLogic {
-                    give_low: low_to,
-                    give_high: high_to,
-                })
+            Instruction::BotInstr(bot_id, bot_logic) => {
+                bots.entry(bot_id).or_default().logic = Some(bot_logic);
             }
         }
     }
