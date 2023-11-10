@@ -9,14 +9,12 @@ use nom::{
     sequence::{preceded, tuple},
     IResult,
 };
-use std::{
-    collections::{HashMap, VecDeque},
-};
+use std::collections::{HashMap, VecDeque};
 
 #[derive(Debug, Default)]
 struct Bot {
     chips: Vec<Chip>,
-    logic: BotLogic,
+    logic: Option<BotLogic>,
 }
 
 #[derive(Debug, Default)]
@@ -24,10 +22,10 @@ struct Output {
     chips: Vec<Chip>,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 struct BotLogic {
-    give_low: Option<SendId>,
-    give_high: Option<SendId>,
+    give_low: SendId,
+    give_high: SendId,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord)]
@@ -107,37 +105,33 @@ pub fn solve_part1(input: &str) -> String {
                 high_to,
             } => {
                 let bot = bots.entry(bot_id).or_default();
-                bot.logic.give_high = Some(high_to);
-                bot.logic.give_low = Some(low_to);
+                bot.logic = Some(BotLogic {
+                    give_low: low_to,
+                    give_high: high_to,
+                })
             }
         }
     }
 
     while !bot_queue.is_empty() {
         let bot_id = bot_queue.pop_front().unwrap();
-
-        let sent_chips = bots
-            .get_mut(&bot_id)
+        bots.get_mut(&bot_id)
             .and_then(|bot| {
                 bot.chips.sort();
-                let chip_copies = bot.chips.clone();
-                
-                // NOTE: below check also empties the list
-                if (bot.chips.pop()? == Chip(61) && bot.chips.pop()? == Chip(17)) {
+                let max_chip = bot.chips.pop()?;
+                let min_chip = bot.chips.pop()?;
+
+                if (max_chip == Chip(61) && min_chip == Chip(17)) {
                     println!("Found the special bot! Id: {:?}", bot_id)
                 }
 
-                Some(
-                    chip_copies
-                        .into_iter()
-                        .zip([bot.logic.give_low?, bot.logic.give_high?])
-                        .collect_vec(),
-                )
+                bot.logic
+                    .as_ref()
+                    .and_then(|l| Some([(max_chip, l.give_high), (min_chip, l.give_low)]))
             })
-            .expect("If a bot has been chosen to give away its chips this should not fail.");
-
-        for (chip, send_id) in sent_chips {
-            match send_id {
+            .expect("The bot must be listed in the bot map.")
+            .into_iter()
+            .for_each(|(chip, send_id)| match send_id {
                 SendId::Bot(id) => {
                     bots.entry(id).and_modify(|bot| {
                         bot.chips.push(chip);
@@ -150,8 +144,7 @@ pub fn solve_part1(input: &str) -> String {
                     let output = outputs.entry(id).or_default();
                     output.chips.push(chip);
                 }
-            }
-        }
+            });
     }
 
     let Chip(val0) = outputs.get(&0).and_then(|out| out.chips.first()).unwrap();
@@ -178,6 +171,6 @@ mod test_day10 {
     #[test]
     fn test_part1() {
         let input = "value 5 goes to bot 2\nbot 2 gives low to bot 1 and high to bot 0\nvalue 3 goes to bot 1\nbot 1 gives low to output 1 and high to bot 0\nbot 0 gives low to output 2 and high to output 0\nvalue 2 goes to bot 2";
-        println!("{:?}", solve_part1(input));
+        assert_eq!("Output value product: 30", solve_part1(input))
     }
 }
