@@ -113,7 +113,7 @@ pub fn solve_part2(input: &str) -> u32 {
 
 #[cfg(test)]
 mod test_day7 {
-    use crate::solutions::day7::*;
+    use super::*;
     use SectionKind::*;
 
     #[test]

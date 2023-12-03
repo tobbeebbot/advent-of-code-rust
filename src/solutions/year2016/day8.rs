@@ -138,7 +138,7 @@ pub fn solve_part2(input: &str) -> String {
 
 #[cfg(test)]
 mod test_day8 {
-    use crate::solutions::day8::*;
+    use super::*;
 
     #[test]
     fn test_parse_commands() {

@@ -157,7 +157,7 @@ pub fn solve_part2(input: &str) -> String {
 
 #[cfg(test)]
 mod test_day10 {
-    use crate::solutions::day10::*;
+    use super::*;
 
     #[test]
     fn test_parse_instructions() {

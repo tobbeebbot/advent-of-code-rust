@@ -52,7 +52,7 @@ pub fn solve_part2(input: &str) -> u128 {
 
 #[cfg(test)]
 mod test_day9 {
-    use crate::solutions::day9::*;
+    use super::*;
 
     #[test]
     fn test_parse_repeated() {

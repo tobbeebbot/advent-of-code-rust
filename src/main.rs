@@ -13,9 +13,9 @@ fn main() {
     let contents = fs::read_to_string(file_path)
         .expect("Should have been able to read the file");
 
-    let answer = solutions::day10::solve_part1(&contents);
+    let answer = solutions::year2016::day10::solve_part1(&contents);
     println!("Solition to {day} part1 is: \n{answer}");
 
-    let answer = solutions::day10::solve_part2(&contents);
+    let answer = solutions::year2016::day10::solve_part2(&contents);
     println!("Solition to {day} part2 is: \n{answer}");
 }

@@ -43,7 +43,7 @@ pub fn solve_part2(input: &str) -> u32 {
 
 #[cfg(test)]
 mod test_day3 {
-    use crate::solutions::day3::*;
+    use super::*;
 
     #[test]
     fn test_single_triangle() {

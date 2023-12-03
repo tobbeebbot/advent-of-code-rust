@@ -15,7 +15,7 @@
 			""
 			"#[cfg(test)]"
 			"mod test_$1 {"
-    		"	use crate::solutions::$1::*;"
+    		"	use super::*;"
 			""
     		"	#[test]"
 			"	fn test_part1() {"

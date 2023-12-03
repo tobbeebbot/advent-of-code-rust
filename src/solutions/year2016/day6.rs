@@ -47,7 +47,7 @@ pub fn solve_part2(input: &str) -> String {
 
 #[cfg(test)]
 mod test_day6 {
-    use crate::solutions::day6::*;
+    use super::*;
 
     #[test]
     fn test_part1() {

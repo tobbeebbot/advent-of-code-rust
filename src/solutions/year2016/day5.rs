@@ -63,7 +63,7 @@ pub fn solve_part2(door_id: &str) -> String {
 
 #[cfg(test)]
 mod test_day5 {
-    use crate::solutions::day5::*;
+    use super::*;
 
     #[test]
     fn test_part1() {
@@ -82,7 +82,7 @@ mod test_day5 {
     fn test_part2() {
         let input = "abc";
         let expected = "05ace8e3";
-        assert_eq!(expected, solve_part2(input))
+        assert_eq!(expected, solve_part2(input));
     }
 
     #[test]
