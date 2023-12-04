@@ -56,7 +56,7 @@ pub fn solve_part2(input: &str) -> u32 {
             for offset in (1..=matches as u32) {
                 map.entry(card.id + offset)
                     .and_modify(|e| *e += copies_of_current)
-                    .or_insert(1 + copies_of_current);
+                    .or_insert(1 + copies_of_current); // original + copies
             }
 
             map
