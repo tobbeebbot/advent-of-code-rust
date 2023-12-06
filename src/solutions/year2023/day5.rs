@@ -2,7 +2,7 @@
 
 use std::ops::Range;
 
-use indicatif::ProgressIterator;
+use indicatif::{ParallelProgressIterator, ProgressIterator};
 use itertools::Itertools;
 use nom::{
     bytes::complete::{tag, take_while},
@@ -12,6 +12,7 @@ use nom::{
     sequence::{preceded, separated_pair, tuple},
     IResult, Parser,
 };
+use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
 #[derive(Debug)]
 struct Mapping {
@@ -62,6 +63,14 @@ fn parse_mappings(input: &str) -> IResult<&str, Mappings> {
     ))(input)
 }
 
+fn apply_mapping(item: i64, map_layer: &Vec<Mapping>) -> i64 {
+    map_layer
+        .iter()
+        .find(|m| m.source_range.contains(&item))
+        .and_then(|m| Some(item + m.offset))
+        .unwrap_or(item)
+}
+
 pub fn solve_part1(input: &str) -> String {
     let (input, seeds) = parse_seeds(input).expect("Parser should work");
     let (_, mappings) = parse_mappings(input).unwrap();
@@ -69,13 +78,7 @@ pub fn solve_part1(input: &str) -> String {
     let locations = mappings.iter().fold(seeds, |items, mapping| {
         let new_prods = items
             .iter()
-            .map(|item| {
-                mapping
-                    .iter()
-                    .find(|m| m.source_range.contains(item))
-                    .and_then(|m| Some(item + m.offset))
-                    .unwrap_or(*item)
-            })
+            .map(|&item| apply_mapping(item, mapping))
             .collect();
 
         new_prods
@@ -88,23 +91,19 @@ pub fn solve_part2(input: &str) -> String {
     let (input, seed_ranges) = parse_seed_ranges(input).expect("parser should work");
     let (_, mappings) = parse_mappings(input).unwrap();
 
+    let number_of_seed_ranges = seed_ranges.len() as u64;
+
     // Brute force
-    let location = seed_ranges
-        .into_iter()
-        .progress()
-        .flat_map(|sr| sr)
-        .map(|seed| {
-            mappings.iter().fold(seed, |item, map_layer| {
-                map_layer
-                    .iter()
-                    .find(|m| m.source_range.contains(&item))
-                    .and_then(|m| Some(item + m.offset))
-                    .unwrap_or(item)
-            })
+    let min_location = seed_ranges
+        .into_par_iter()
+        .flat_map(|sr| {
+            sr.map(|seed| mappings.iter().fold(seed, apply_mapping))
+                .min()
         })
+        .progress_count(number_of_seed_ranges)
         .min();
 
-    location.unwrap().to_string()
+    min_location.unwrap().to_string()
 }
 
 #[cfg(test)]
