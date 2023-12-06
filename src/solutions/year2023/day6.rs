@@ -3,7 +3,7 @@
 use itertools::Itertools;
 use nom::{
     bytes::complete::tag,
-    character::complete::{digit1, newline, space1, u32, u64},
+    character::complete::{digit1, newline, space1, u64},
     combinator::map,
     multi::many1,
     sequence::{preceded, separated_pair},
