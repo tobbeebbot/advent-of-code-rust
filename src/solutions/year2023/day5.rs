@@ -168,12 +168,13 @@ pub fn solve_part2(input: &str) -> String {
             .collect_vec()
     });
 
-    location_ranges
+    let min_location = location_ranges
         .into_iter()
         .flat_map(|range| range.min())
         .min()
-        .expect("There has to be a minimum")
-        .to_string()
+        .expect("There has to be a minimum");
+
+    min_location.to_string()
 }
 
 #[cfg(test)]
