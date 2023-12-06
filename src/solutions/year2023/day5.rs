@@ -29,12 +29,7 @@ impl Mapping {
         let max_start = first.start.max(second.start);
         let min_end = first.end.min(second.end);
 
-        if max_start < min_end {
-            let new_range = (max_start + self.offset)..(min_end + self.offset);
-            Some(new_range)
-        } else {
-            None
-        }
+        (max_start < min_end).then(|| (max_start + self.offset)..(min_end + self.offset))
     }
 }
 
