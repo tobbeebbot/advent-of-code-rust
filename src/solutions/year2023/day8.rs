@@ -1,7 +1,8 @@
 #![allow(unused)]
 
-use std::collections::HashMap;
+use std::{collections::{HashMap, HashSet}};
 
+use itertools::Itertools;
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_till},
@@ -11,6 +12,7 @@ use nom::{
     sequence::{delimited, separated_pair},
     IResult,
 };
+use num::Integer;
 
 #[derive(Debug)]
 struct Node<'a> {
@@ -86,8 +88,66 @@ pub fn solve_part1(input: &str) -> String {
     iter_count.to_string()
 }
 
+pub fn lcm(nums: &[u128]) -> u128 {
+    if nums.len() == 1 {
+        return nums[0];
+    }
+    let a = nums[0];
+    let b = lcm(&nums[1..]);
+    a * b / gcd_of_two_numbers(a, b)
+}
+
+fn gcd_of_two_numbers(a: u128, b: u128) -> u128 {
+    if b == 0 {
+        return a;
+    }
+    gcd_of_two_numbers(b, a % b)
+}
+
 pub fn solve_part2(input: &str) -> String {
-    "unimplemented".to_string()
+    let (instructions, graph) = parse_input(input);
+
+    let starts = graph
+        .keys()
+        .filter_map(|key| key.ends_with("A").then_some(*key))
+        .collect::<HashSet<&str>>();
+
+    dbg!(&starts);
+
+    let ends = graph
+        .keys()
+        .filter_map(|key| key.ends_with("Z").then_some(*key))
+        .collect::<HashSet<&str>>();
+
+    dbg!(&ends);
+    let loop_length = starts
+        .iter()
+        .map(|start| {
+            instructions
+                .iter()
+                .cycle()
+                .scan(start, |mut key, instruction| {
+                    let opt_node = graph.get(*key);
+
+                    if let Some(node) = opt_node {
+                        match instruction {
+                            Instruction::Left => *key = &node.left,
+                            Instruction::Right => *key = &node.right,
+                        }
+                    }
+                    opt_node
+                })
+                .skip(1)
+                .take_while(|node| !ends.contains(node.key))
+                .count() as u128
+        })
+        .collect_vec();
+
+    dbg!(&loop_length);
+    
+    let result = lcm(&loop_length);
+    
+    result.to_string()
 }
 
 #[cfg(test)]
@@ -122,8 +182,17 @@ ZZZ = (ZZZ, ZZZ)";
 
     #[test]
     fn test_part2() {
-        let input = "todo";
-        let expected = "todo";
+        let input = "LR
+
+AAA = (AAB, XXX)
+AAB = (XXX, AAZ)
+AAZ = (AAB, XXX)
+BBA = (BBB, XXX)
+BBB = (BBC, BBC)
+BBC = (BBZ, BBZ)
+BBZ = (BBB, BBB)
+XXX = (XXX, XXX)";
+        let expected = "6";
         assert_eq!(expected, solve_part2(input))
     }
 }
