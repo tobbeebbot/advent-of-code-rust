@@ -6,7 +6,7 @@ fn next_number(numbers: Vec<i64>) -> i64 {
     if numbers.iter().all(|&i| i == 0) {
         0
     } else {
-        let last = numbers.last().unwrap();
+        let last = numbers.last().expect("all() is true if list empty");
         last + next_number(
             numbers
                 .iter()
@@ -18,19 +18,8 @@ fn next_number(numbers: Vec<i64>) -> i64 {
 }
 
 fn prev_number(numbers: Vec<i64>) -> i64 {
-    if numbers.iter().all(|&i| i == 0) {
-        0
-    } else {
-        let first = numbers.first().unwrap();
-        first
-            - prev_number(
-                numbers
-                    .iter()
-                    .tuple_windows()
-                    .map(|(a, b)| b - a)
-                    .collect_vec(),
-            )
-    }
+    let numbers = numbers.into_iter().rev().collect();
+    next_number(numbers)
 }
 
 fn parse_num_vecs(input: &str) -> Vec<Vec<i64>> {
